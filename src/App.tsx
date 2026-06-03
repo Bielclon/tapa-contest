@@ -15,6 +15,7 @@ import AdminPanel from "./AdminPanel"
 import VotacionPantalla from "./VotacionPantalla"
 import RegistroPlatos from "./RegistroPlatos"
 import ResultadosPantalla from "./ResultadosPantalla"
+import RequireAuth from "./RequireAuth"
 import Auth from "./Auth"
 import Header from "./components/Header"
 import RoomLobby from "./RoomLobby"
@@ -54,8 +55,8 @@ export default function App() {
           <Route path="/" element={<VistaFamilia />} />
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/room/:roomId/register" element={<RegistroPlatos />} />
-          <Route path="/room/:roomId/vote" element={<VotacionPantalla />} />
+          <Route path="/room/:roomId/register" element={<RequireAuth><RegistroPlatos /></RequireAuth>} />
+          <Route path="/room/:roomId/vote" element={<RequireAuth><VotacionPantalla /></RequireAuth>} />
           <Route path="/room/:roomId/results" element={<ResultadosPantalla />} />
           <Route path="/room" element={<RoomLobby />} />
         </Routes>
