@@ -1,7 +1,7 @@
 ﻿import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { db } from './firebase'
-import { doc, getDoc, collection, getDocs } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, onSnapshot } from 'firebase/firestore'
 
 export default function ResultadosPantalla() {
   const { roomId } = useParams()
@@ -31,6 +31,16 @@ export default function ResultadosPantalla() {
       setLoading(false)
     }
     fetch()
+
+    // listen for room updates to show if finalized in realtime
+    const unsub = onSnapshot(doc(db, 'rooms', roomId), (snap) => {
+      const r = snap.data() as any
+      if (r?.isFinished) {
+        // could show a toast or re-fetch ranking
+        setRanking(r.finalRanking || [])
+      }
+    })
+    return () => unsub()
   }, [roomId])
 
   if (!roomId) return <div className="p-6">Sala inválida</div>

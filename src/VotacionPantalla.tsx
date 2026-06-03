@@ -1,13 +1,15 @@
 ﻿import React, { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { collection, getDocs, doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, getDocs, doc, setDoc, getDoc, serverTimestamp, onSnapshot } from 'firebase/firestore'
 import { db, auth } from './firebase'
+import Notification from './components/Notification'
 
 export default function VotacionPantalla() {
   const { roomId } = useParams()
   const [dishes, setDishes] = useState<any[]>([])
   const [ranking, setRanking] = useState<string[]>([])
   const [loading, setLoading] = useState(false)
+  const [notice, setNotice] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -30,7 +32,20 @@ export default function VotacionPantalla() {
       }
     }
     fetch()
-  }, [roomId])
+    // listen for room closed
+    const roomRef = doc(db, 'rooms', roomId)
+    const unsubRoom = onSnapshot(roomRef, (r) => {
+      const data = r.data() as any
+      if (data?.isFinished) {
+        setNotice('La votación ha sido cerrada. Redirigiendo a resultados...')
+        setTimeout(()=>{
+          navigate(`/room/${roomId}/results`)
+        }, 1200)
+      }
+    })
+
+    return () => unsubRoom()
+  }, [roomId, navigate])
 
   const move = (index: number, dir: number) => {
     const arr = [...ranking]
@@ -50,8 +65,8 @@ export default function VotacionPantalla() {
       voter: uid,
     })
     setLoading(false)
-    alert('Voto registrado')
-    navigate('/')
+    setNotice('Voto registrado')
+    setTimeout(()=>navigate('/'),600)
   }
 
   return (
@@ -82,6 +97,7 @@ export default function VotacionPantalla() {
         <button onClick={submit} disabled={loading} className="bg-blue-600 text-white px-4 py-2 rounded">{loading ? 'Enviando...' : 'Enviar voto'}</button>
         <button onClick={()=>navigate(-1)} className="bg-gray-200 px-4 py-2 rounded">Volver</button>
       </div>
+      {notice && <Notification message={notice} onClose={() => setNotice('')} />}
     </div>
   )
 }
