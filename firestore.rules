@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Rooms collection
+    match /rooms/{roomId} {
+      allow read: if true;
+      allow create: if request.auth != null && request.resource.data.hostUid == request.auth.uid;
+      // Only host can update the room document (e.g., set isFinished/finalRanking)
+      allow update: if request.auth != null && resource.data.hostUid == request.auth.uid;
+      allow delete: if request.auth != null && resource.data.hostUid == request.auth.uid;
+
+      // Subcollections: dishes
+      match /dishes/{dishId} {
+        // Any authenticated user can create a dish in a room
+        allow create: if request.auth != null;
+        allow read: if true;
+        // allow update/delete only by the creator or the room host
+        allow update, delete: if request.auth != null && (resource.data.createdBy == request.auth.uid || get(/databases/$(database)/documents/rooms/$(roomId)).data.hostUid == request.auth.uid);
+      }
+
+      // Subcollections: votes
+      match /votes/{voteId} {
+        // A user can create or update their own vote (voteId should be their uid)
+        allow create: if request.auth != null && request.auth.uid == voteId;
+        allow update: if request.auth != null && request.auth.uid == voteId;
+        allow read: if true;
+        allow delete: if request.auth != null && (request.auth.uid == voteId || get(/databases/$(database)/documents/rooms/$(roomId)).data.hostUid == request.auth.uid);
+      }
+    }
+  }
+}

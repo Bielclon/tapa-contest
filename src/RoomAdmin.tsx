@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { db, auth } from './firebase'
-import { doc, getDoc, collection, getDocs, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { doc, getDoc, collection, getDocs, updateDoc, serverTimestamp, onSnapshot, QuerySnapshot } from 'firebase/firestore'
 
 interface RankingItem {
   id: string
@@ -17,17 +17,27 @@ export default function RoomAdmin() {
 
   useEffect(() => {
     if (!roomId) return
-    const fetchAll = async () => {
-      const roomDoc = await getDoc(doc(db, 'rooms', roomId))
-      setRoom(roomDoc.exists() ? roomDoc.data() : null)
 
-      const votesSnap = await getDocs(collection(db, 'rooms', roomId, 'votes'))
-      setVotes(votesSnap.docs.map(d => ({ id: d.id, ...(d.data() as any) })))
+    const roomRef = doc(db, 'rooms', roomId)
+    const unsubRoom = onSnapshot(roomRef, (snap) => {
+      setRoom(snap.exists() ? snap.data() : null)
+    })
 
-      const dishesSnap = await getDocs(collection(db, 'rooms', roomId, 'dishes'))
-      setDishesCount(dishesSnap.size)
+    const votesRef = collection(db, 'rooms', roomId, 'votes')
+    const unsubVotes = onSnapshot(votesRef, (snap: QuerySnapshot) => {
+      setVotes(snap.docs.map(d => ({ id: d.id, ...(d.data() as any) })))
+    })
+
+    const dishesRef = collection(db, 'rooms', roomId, 'dishes')
+    const unsubDishes = onSnapshot(dishesRef, (snap) => {
+      setDishesCount(snap.size)
+    })
+
+    return () => {
+      unsubRoom()
+      unsubVotes()
+      unsubDishes()
     }
-    fetchAll()
   }, [roomId])
 
   const canManage = room && auth.currentUser && room.hostUid === auth.currentUser.uid
