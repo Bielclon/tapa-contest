@@ -19,6 +19,7 @@ import RequireAuth from "./RequireAuth"
 import Auth from "./Auth"
 import Header from "./components/Header"
 import RoomLobby from "./RoomLobby"
+import RoomAdmin from "./RoomAdmin"
 
 function VistaFamilia() {
   const [gameState, setGameState] = useState<GameState>("LOADING")
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/room/:roomId/register" element={<RequireAuth><RegistroPlatos /></RequireAuth>} />
           <Route path="/room/:roomId/vote" element={<RequireAuth><VotacionPantalla /></RequireAuth>} />
           <Route path="/room/:roomId/results" element={<ResultadosPantalla />} />
+          <Route path="/room/:roomId/admin" element={<RequireAuth><RoomAdmin /></RequireAuth>} />
           <Route path="/room" element={<RoomLobby />} />
         </Routes>
       </div>
