@@ -21,17 +21,17 @@ export default defineConfig([
     },
     plugins: {
       '@typescript-eslint': tsPlugin,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
     },
-    extends: [
-      js.configs.recommended,
-      reactHooks.configs.flat.recommended,
-      reactRefresh.configs.vite,
-      'plugin:@typescript-eslint/recommended',
-    ],
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      ...js.configs.recommended.rules,
+      ...tsPlugin.configs.recommended.rules,
+      ...reactHooks.configs.recommended.rules,
+      ...reactRefresh.configs.vite.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'off',
+      'no-unused-vars': 'off',
     },
   },
 ])
