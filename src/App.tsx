@@ -2,6 +2,8 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { doc, onSnapshot } from "firebase/firestore"
 import { db } from "./firebase"
+import { onAuthStateChanged } from "firebase/auth"
+import { auth } from "./firebase"
 
 type GameState = "LOADING" | "REGISTER" | "VOTING" | "FINISHED"
 
@@ -11,8 +13,11 @@ interface GameStateDoc {
 
 import AdminPanel from "./AdminPanel"
 import VotacionPantalla from "./VotacionPantalla"
-// import RegistroPlatos from "./RegistroPlatos"
-// import ResultadosPantalla from "./ResultadosPantalla"
+import RegistroPlatos from "./RegistroPlatos"
+import ResultadosPantalla from "./ResultadosPantalla"
+import Auth from "./Auth"
+import Header from "./components/Header"
+import RoomLobby from "./RoomLobby"
 
 function VistaFamilia() {
   const [gameState, setGameState] = useState<GameState>("LOADING")
@@ -34,12 +39,27 @@ function VistaFamilia() {
 }
 
 export default function App() {
+  const [user, setUser] = useState<any>(null)
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => setUser(u))
+    return () => unsub()
+  }, [])
+
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<VistaFamilia />} />
-        <Route path="/admin" element={<AdminPanel />} />
-      </Routes>
+      <Header user={user} />
+      <div className="p-6">
+        <Routes>
+          <Route path="/" element={<VistaFamilia />} />
+          <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/room/:roomId/register" element={<RegistroPlatos />} />
+          <Route path="/room/:roomId/vote" element={<VotacionPantalla />} />
+          <Route path="/room/:roomId/results" element={<ResultadosPantalla />} />
+          <Route path="/room" element={<RoomLobby />} />
+        </Routes>
+      </div>
     </BrowserRouter>
   )
 }
