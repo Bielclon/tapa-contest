@@ -16,6 +16,7 @@ export default function Header({ user }: { user: any }) {
         <Link to="/" className="text-xl font-bold">Tapa Contest</Link>
         <nav className="space-x-2 text-sm text-gray-600">
           <Link to="/">Home</Link>
+          <Link to="/room" className="ml-2">Salas</Link>
         </nav>
       </div>
 
